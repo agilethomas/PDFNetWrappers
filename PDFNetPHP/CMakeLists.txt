@@ -58,7 +58,7 @@ message(STATUS "Generating sources for PHP bindings using swig...")
 set(PDFNetPHP_SourcesDir ${PROJECT_BINARY_DIR})
 
 execute_process(
-    COMMAND ${SWIG_EXECUTABLE} -c++ -php -DNTS -DSWIGHIDDEN_SIG -I${PDFNetC_Include_Dir} -outdir ${PDFNetPHP_SourcesDir} -o ${PDFNetPHP_SourcesDir}/PDFNetPHP.cpp -oh ${PDFNetPHP_SourcesDir}/PDFNetPHP.hpp PDFNetPHP.i
+    COMMAND ${SWIG_EXECUTABLE} -c++ -php7 -DNTS -DSWIGHIDDEN_SIG -I${PDFNetC_Include_Dir} -outdir ${PDFNetPHP_SourcesDir} -o ${PDFNetPHP_SourcesDir}/PDFNetPHP.cpp -oh ${PDFNetPHP_SourcesDir}/PDFNetPHP.hpp PDFNetPHP.i
     RESULT_VARIABLE SOURCE_GEN_RESULT
     OUTPUT_FILE ${PROJECT_BINARY_DIR}/swig.log
     ERROR_FILE ${PROJECT_BINARY_DIR}/swig.err.log

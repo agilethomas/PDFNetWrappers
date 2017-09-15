@@ -19,15 +19,15 @@ namespace pdftron {
 	 */
 	%typemap(in) UString, const UString
 	{  
-		convert_to_string_ex($input);
-		char* temp$argnum = Z_STRVAL_PP($input);
+		convert_to_string_ex(&$input);
+		char* temp$argnum = Z_STRVAL_P(&$input);
 		$1 = UString(temp$argnum);
 	}
 
 	%typemap(out) UString, const UString
 	{  
 		std::string temp$argnum = $1.ConvertToUtf8();
-		ZVAL_STRINGL($result, const_cast<char*>(temp$argnum.data()), temp$argnum.size(), 1);
+		ZVAL_STRINGL($result, const_cast<char*>(temp$argnum.data()), temp$argnum.size());
 	}
 
 	/**
@@ -35,8 +35,8 @@ namespace pdftron {
 	 */	
 	%typemap(in) UString const &
 	{  		
-		convert_to_string_ex($input);
-		char* temp$argnum = Z_STRVAL_PP($input);
+		convert_to_string_ex(&$input);
+		char* temp$argnum = Z_STRVAL_P(&$input);
 		$1 = new UString(temp$argnum);
 	}
 	
@@ -45,7 +45,7 @@ namespace pdftron {
 	 */
 	%typemap(typecheck,precedence=SWIG_TYPECHECK_UNISTRING) UString, const UString, UString const &
 	%{
-		$1 = ( Z_TYPE_PP($input) == IS_STRING ) ? 1 : 0;
+		$1 = ( Z_TYPE_P(&$input) == IS_STRING ) ? 1 : 0;
 	%}
 	
 	/**
@@ -63,14 +63,14 @@ namespace pdftron {
 	%typemap(directorin) UString, const UString
 	%{
         std::string temp$argnum = $input.ConvertToUtf8();
-		ZVAL_STRINGL($1, const_cast<char*>(temp$argnum.data()), temp$argnum.size(), 1);
+		ZVAL_STRINGL($1, const_cast<char*>(temp$argnum.data()), temp$argnum.size());
 	%}
     
     /* PHP string -> UString */
 	%typemap(directorout) UString, const UString
 	{
-		convert_to_string_ex(&$1);
-		char* temp$argnum = Z_STRVAL_PP(&$1);
+		convert_to_string_ex($1);
+		char* temp$argnum = Z_STRVAL_P($1);
 		$result = UString(temp$argnum);
 	}
 }

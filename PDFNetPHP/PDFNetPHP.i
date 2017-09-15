@@ -268,34 +268,29 @@ namespace pdftron {
  * PHP array of strings to char** (map to String[] in java wrapper)
  */
 %typemap (in) char** {
-    zval **data;
+    zval *data;
       HashTable *arr_hash;
-    HashPosition pointer;
-    int array_count;
     char ** result;
     int i = 0;
 
-    convert_to_array_ex($input);
-        arr_hash = Z_ARRVAL_PP($input);
-        array_count = zend_hash_num_elements(arr_hash);
+    convert_to_array_ex(&$input);
+        arr_hash = Z_ARRVAL_P(&$input);
 
-        for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer); 
-    zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS && i < array_count; 
-    zend_hash_move_forward_ex(arr_hash, &pointer)) {
+    ZEND_HASH_FOREACH_VAL(arr_hash, data) {
 
-        if (Z_TYPE_PP(data) == IS_STRING) {
-            result[i] = Z_STRVAL_PP(data);
+        if (Z_TYPE_P(data) == IS_STRING) {
+            result[i] = Z_STRVAL_P(data);
            }
         else {
             zend_error(E_ERROR, "Expected a string");
         }
         i++;
-    }
+    } ZEND_HASH_FOREACH_END();
     $1 = result;
 }
 
 %typemap (typecheck) char** {
-    $1 = ( Z_TYPE_PP($input) == IS_ARRAY ) ? 1 : 0;
+    $1 = ( Z_TYPE_P(&$input) == IS_ARRAY ) ? 1 : 0;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -309,12 +304,12 @@ namespace pdftron {
 %typemap (in) pdftron::PDF::PDFA::PDFACompliance::ErrorCode* 
 %{
     // converts python int to C long
-    convert_to_long_ex($input);
-    $1 = (pdftron::PDF::PDFA::PDFACompliance::ErrorCode*)&Z_LVAL_PP($input);
+    convert_to_long_ex(&$input);
+    $1 = (pdftron::PDF::PDFA::PDFACompliance::ErrorCode*)&Z_LVAL_P(&$input);
 %}
 
 %typemap (typecheck) pdftron::PDF::PDFA::PDFACompliance::ErrorCode* {
-    $1 = ( Z_TYPE_PP($input) == IS_LONG ) ? 1 : 0;
+    $1 = ( Z_TYPE_P(&$input) == IS_LONG ) ? 1 : 0;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -331,37 +326,34 @@ namespace pdftron {
  */
 %typemap(in) const pdftron::Unicode* text_data 
 { 
-    zval **data;
+    zval *data;
       HashTable *arr_hash;
-    HashPosition pointer;
     int array_count;
     int i = 0;
 
-    convert_to_array_ex($input);
-        arr_hash = Z_ARRVAL_PP($input);
+    convert_to_array_ex(&$input);
+        arr_hash = Z_ARRVAL_P(&$input);
         array_count = zend_hash_num_elements(arr_hash);
 
     Unicode* $temp = new Unicode[array_count];
 
-    for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer); 
-    zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS && i < array_count; 
-    zend_hash_move_forward_ex(arr_hash, &pointer)) {
-        if (Z_TYPE_PP(data) == IS_STRING) {
-            $temp[i] = (pdftron::Unicode)*Z_STRVAL_PP(data);
+    ZEND_HASH_FOREACH_VAL(arr_hash, data) {
+        if (Z_TYPE_P(data) == IS_STRING) {
+            $temp[i] = (pdftron::Unicode)*Z_STRVAL_P(data);
            }
-        else if (Z_TYPE_PP(data) == IS_LONG) {
-            $temp[i] = (pdftron::Unicode)Z_LVAL_PP(data);
+        else if (Z_TYPE_P(data) == IS_LONG) {
+            $temp[i] = (pdftron::Unicode)Z_LVAL_P(data);
         }
         else {
             zend_error(E_ERROR, "Expected a string or int");
         }
         i++;
-    }
+    } ZEND_HASH_FOREACH_END();
     $1 = (pdftron::Unicode *) $temp;
 }
 
 %typemap(typecheck) const pdftron::Unicode* text_data  {
-    $1 = ( Z_TYPE_PP($input) == IS_ARRAY ) ? 1 : 0;
+    $1 = ( Z_TYPE_P(&$input) == IS_ARRAY ) ? 1 : 0;
 }
 
 /**
@@ -378,30 +370,26 @@ namespace pdftron {
  * Maps PHP array (of floats) to C++ vector<double>
  */
 %typemap (in) std::vector<double> {
-    zval **data;
+    zval *data;
       HashTable *arr_hash;
-    HashPosition pointer;
     int array_count;
     std::vector<double> $vec;
     int i = 0;
 
-    convert_to_array_ex($input);
-        arr_hash = Z_ARRVAL_PP($input);
+    convert_to_array_ex(&$input);
+        arr_hash = Z_ARRVAL_P(&$input);
         array_count = zend_hash_num_elements(arr_hash);
     $vec.resize(array_count);
 
-        for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer); 
-    zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS && i < array_count; 
-    zend_hash_move_forward_ex(arr_hash, &pointer)) {
-
-        if (Z_TYPE_PP(data) == IS_DOUBLE) {
-            $vec[i] = Z_DVAL_PP(data);
+      ZEND_HASH_FOREACH_VAL(arr_hash, data) {
+        if (Z_TYPE_P(data) == IS_DOUBLE) {
+            $vec[i] = Z_DVAL_P(data);
            }
         else {
             zend_error(E_ERROR, "Expected a double");
         }
         i++;
-    }
+    } ZEND_HASH_FOREACH_END();
     $1 = $vec;
 }
 
@@ -409,29 +397,25 @@ namespace pdftron {
  * Maps PHP array (of floats) to C++ vector<double>&
  */
 %typemap (in) std::vector<double>& {
-    zval **data;
+    zval *data;
       HashTable *arr_hash;
-    HashPosition pointer;
     int array_count;
 
     int i$argnum = 0;
-    convert_to_array_ex($input);
-        arr_hash = Z_ARRVAL_PP($input);
+    convert_to_array_ex(&$input);
+        arr_hash = Z_ARRVAL_P(&$input);
         array_count = zend_hash_num_elements(arr_hash);
     std::vector<double>* vec$argnum = new std::vector<double>(array_count);
 
-        for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer); 
-    zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS && i$argnum < array_count; 
-    zend_hash_move_forward_ex(arr_hash, &pointer)) {
-
-        if (Z_TYPE_PP(data) == IS_DOUBLE) {
-            (*vec$argnum)[i$argnum] = Z_DVAL_PP(data);
+      ZEND_HASH_FOREACH_VAL(arr_hash, data) {
+        if (Z_TYPE_P(data) == IS_DOUBLE) {
+            (*vec$argnum)[i$argnum] = Z_DVAL_P(data);
            }
         else {
             zend_error(E_ERROR, "Expected a double");
         }
         i$argnum++;
-    }
+    } ZEND_HASH_FOREACH_END();
     $1 = vec$argnum;
 }
 
@@ -444,7 +428,7 @@ namespace pdftron {
 }
 
 %typemap(typecheck) std::vector<double>, std::vector<double>&  {
-    $1 = ( Z_TYPE_PP($input) == IS_ARRAY ) ? 1 : 0;
+    $1 = ( Z_TYPE_P(&$input) == IS_ARRAY ) ? 1 : 0;
 }
 
 %typemap(freearg) std::vector<double>&
@@ -487,16 +471,16 @@ namespace pdftron {
         i++;
     }
     $1 = result$argnum;*/
-    convert_to_string_ex($input);
-    $1 = (unsigned char*)Z_STRVAL_PP($input);
+    convert_to_string_ex(&$input);
+    $1 = (unsigned char*)Z_STRVAL_P(&$input);
 %}
 
 %typemap(typecheck) unsigned char *  {
-    $1 = ( Z_TYPE_PP($input) == IS_STRING ) ? 1 : 0;
+    $1 = ( Z_TYPE_P(&$input) == IS_STRING ) ? 1 : 0;
 }
 
 %typemap(out) std::vector<unsigned char> {
-    ZVAL_STRINGL($result, (const char*)&$1[0], $1.size(), 1);
+    ZVAL_STRINGL($result, (const char*)&$1[0], $1.size());
 }
 
 //----------------------------------------------------------------------------------------------
@@ -506,23 +490,23 @@ namespace pdftron {
 
 %typemap(in) std::vector<unsigned char>
 {  
-    convert_to_string_ex($input);
-    unsigned char* temp = (unsigned char*)Z_STRVAL_PP($input);
-    $1.resize(Z_STRLEN_PP($input));
-    memcpy(&$1[0], temp, Z_STRLEN_PP($input));
+    convert_to_string_ex(&$input);
+    unsigned char* temp = (unsigned char*)Z_STRVAL_P(&$input);
+    $1.resize(Z_STRLEN_P(&$input));
+    memcpy(&$1[0], temp, Z_STRLEN_P(&$input));
 }
 
 %typemap(in) const std::vector<unsigned char>&
 {
-    convert_to_string_ex($input);
-    unsigned char* temp = (unsigned char*)Z_STRVAL_PP($input);
-    $1->resize(Z_STRLEN_PP($input));
-    memcpy(&((*$1)[0]), temp, Z_STRLEN_PP($input));
+    convert_to_string_ex(&$input);
+    unsigned char* temp = (unsigned char*)Z_STRVAL_P(&$input);
+    $1->resize(Z_STRLEN_P(&$input));
+    memcpy(&((*$1)[0]), temp, Z_STRLEN_P(&$input));
 }
 
 %typemap(typecheck) std::vector<unsigned char>
 {
-    $1 = ( Z_TYPE_PP($input) == IS_STRING ) ? 1 : 0;
+    $1 = ( Z_TYPE_P($input) == IS_STRING ) ? 1 : 0;
 }
 /**
  * Typemap for directors
@@ -530,20 +514,20 @@ namespace pdftron {
 /* std::vector<unsigned char> -> PHP string */
 %typemap(directorin) std::vector<unsigned char>
 {
-    ZVAL_STRINGL($1, (const char*) &($input[0]), $input.size(), 1);
+    ZVAL_STRINGL($1, (const char*) &($input[0]), $input.size());
 }
 /* PHP string -> std::vector<unsigned char> */
 %typemap(directorout) std::vector<unsigned char>
 {
-    convert_to_string_ex(&$1);
-    unsigned char* temp = (unsigned char*) Z_STRVAL_PP(&$1);
-    $result.resize(Z_STRLEN_PP(&$1));
-    memcpy(&($result[0]), temp, Z_STRLEN_PP(&$1));
+    convert_to_string_ex($1);
+    unsigned char* temp = (unsigned char*) Z_STRVAL_P($1);
+    $result.resize(Z_STRLEN_P($1));
+    memcpy(&($result[0]), temp, Z_STRLEN_P($1));
 }
 /* const std::vector<unsigned char>& -> PHP string */
 %typemap(directorin) const std::vector<unsigned char>&
 {
-    ZVAL_STRINGL($input, (const char*) &($1_name[0]), $1_name.size(), 1);
+    ZVAL_STRINGL($input, (const char*) &($1_name[0]), $1_name.size());
 }
 
 //----------------------------------------------------------------------------------------------
